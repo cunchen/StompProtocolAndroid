@@ -22,7 +22,7 @@ import okio.ByteString;
 
 /* package */ class OkHttpConnectionProvider implements ConnectionProvider {
 
-    private static final String TAG = WebSocketsConnectionProvider.class.getSimpleName();
+    private static final String TAG = OkHttpConnectionProvider.class.getSimpleName();
 
     private final String mUri;
     private final Map<String, String> mConnectHttpHeaders;

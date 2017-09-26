@@ -114,6 +114,60 @@ public class StompClient {
                 });
     }
 
+    /**
+     * Connect
+     * if has configuared heart-beat in _headers, it will be covered by cx and cy
+     * @param _headers headers
+     * @param reconnect If already connected and reconnect=false - nope
+     * @param cx 0 means it cannot send heart-beats, otherwise it is the smallest number of milliseconds between heart-beats that it can guarantee
+     * @param cy 0 means it does not want to receive heart-beats , otherwise it is the desired number of milliseconds between heart-beats
+     */
+    public void connectWithHeartbeat(List<StompHeader> _headers, boolean reconnect, int cx, int cy) {
+        if (reconnect) disconnect();
+        if (mConnected) return;
+        mLifecycleDisposable = mConnectionProvider.getLifecycleReceiver()
+                .subscribe(lifecycleEvent -> {
+                    switch (lifecycleEvent.getType()) {
+                        case OPENED:
+                            List<StompHeader> headers = new ArrayList<>();
+                            headers.add(new StompHeader(StompHeader.VERSION, SUPPORTED_VERSIONS));
+                            if (_headers != null) headers.addAll(_headers);
+
+                            setHeader(headers, StompHeader.HEART_BEAT, cx + ","  + cy);;
+
+                            mConnectionProvider.send(new StompMessage(StompCommand.CONNECT, headers, null).compile())
+                                    .subscribe();
+                            break;
+
+                        case CLOSED:
+                            mConnected = false;
+                            isConnecting = false;
+                            break;
+
+                        case ERROR:
+                            mConnected = false;
+                            isConnecting = false;
+                            break;
+                    }
+                });
+
+        isConnecting = true;
+        mMessagesDisposable = mConnectionProvider.messages()
+                .map(StompMessage::from)
+                .subscribe(stompMessage -> {
+                    if (stompMessage.getStompCommand().equals(StompCommand.CONNECTED)) {
+                        mConnected = true;
+                        isConnecting = false;
+                        for (ConnectableFlowable<Void> flowable : mWaitConnectionFlowables) {
+                            flowable.connect();
+                        }
+                        mWaitConnectionFlowables.clear();
+                    }
+                    callSubscribers(stompMessage);
+                });
+    }
+
+
     public Flowable<Void> send(String destination) {
         return send(new StompMessage(
                 StompCommand.SEND,
@@ -225,5 +279,12 @@ public class StompClient {
 
     public boolean isConnecting() {
         return isConnecting;
+    }
+
+    private List<StompHeader> setHeader(List<StompHeader> headers, String key, String value) {
+        headers.stream()
+                .filter((stompHeader -> stompHeader.getKey().endsWith(key)))
+                .forEach(stompHeader -> stompHeader = new StompHeader(key, value));
+        return headers;
     }
 }
