@@ -2,7 +2,7 @@ apply plugin: 'com.android.library'
 apply plugin: 'me.tatarka.retrolambda'
 apply plugin: 'com.github.dcendents.android-maven'
 
-group='com.github.NaikSoftware'
+group='com.github.wang135139'
 
 android {
     compileSdkVersion 25
