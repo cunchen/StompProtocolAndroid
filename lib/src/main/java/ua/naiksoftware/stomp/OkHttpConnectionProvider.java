@@ -144,7 +144,11 @@ import okio.ByteString;
 
     @Override
     public void destory() {
-        openedSocked.close(1000, "");
+        if(openedSocked != null ) {
+            openedSocked.close(1000, "");
+        }
+
+        openedSocked = null;
     }
 
     private TreeMap<String, String> headersAsMap(Response response) {
