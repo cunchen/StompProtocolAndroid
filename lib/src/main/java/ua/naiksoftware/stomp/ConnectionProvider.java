@@ -4,6 +4,8 @@ import io.reactivex.Flowable;
 
 /**
  * Created by naik on 05.05.16.
+ *
+ * Update by cunchen on 30.09.17
  */
 public interface ConnectionProvider {
 
@@ -23,4 +25,9 @@ public interface ConnectionProvider {
      * Subscribe this for receive #LifecycleEvent events
      */
     Flowable<LifecycleEvent> getLifecycleReceiver();
+
+    /**
+     * Destory this instance
+     */
+    void destory();
 }

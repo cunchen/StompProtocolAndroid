@@ -133,7 +133,7 @@ public class StompClient {
                             headers.add(new StompHeader(StompHeader.VERSION, SUPPORTED_VERSIONS));
                             if (_headers != null) headers.addAll(_headers);
 
-                            setHeader(headers, StompHeader.HEART_BEAT, cx + ","  + cy);;
+                            headers = setHeader(headers, StompHeader.HEART_BEAT, cx + ","  + cy);;
 
                             mConnectionProvider.send(new StompMessage(StompCommand.CONNECT, headers, null).compile())
                                     .subscribe();
@@ -213,6 +213,7 @@ public class StompClient {
         if (mMessagesDisposable != null) mMessagesDisposable.dispose();
         if (mLifecycleDisposable != null) mLifecycleDisposable.dispose();
         mConnected = false;
+        mConnectionProvider.destory();
     }
 
     public Flowable<StompMessage> topic(String destinationPath) {
@@ -282,9 +283,7 @@ public class StompClient {
     }
 
     private List<StompHeader> setHeader(List<StompHeader> headers, String key, String value) {
-        headers.stream()
-                .filter((stompHeader -> stompHeader.getKey().endsWith(key)))
-                .forEach(stompHeader -> stompHeader = new StompHeader(key, value));
+        headers.add(new StompHeader(key, value));
         return headers;
     }
 }

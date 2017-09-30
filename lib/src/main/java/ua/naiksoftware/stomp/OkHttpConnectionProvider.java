@@ -142,6 +142,11 @@ import okio.ByteString;
                 });
     }
 
+    @Override
+    public void destory() {
+        openedSocked.close(1000, "");
+    }
+
     private TreeMap<String, String> headersAsMap(Response response) {
         TreeMap<String, String> headersAsMap = new TreeMap<>();
         Headers headers = response.headers();
